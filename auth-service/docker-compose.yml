@@ -1,0 +1,6 @@
+services:
+  db:
+    image: postgres:16
+    # Shared POC database: tenant-service (platform.*, tenant_*), auth-service (auth.*), mt-member-group-ws
+    environment: { POSTGRES_DB: platform_db, POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres }
+    ports: ["5432:5432"]

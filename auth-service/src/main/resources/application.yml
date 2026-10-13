@@ -1,0 +1,20 @@
+spring:
+  # Shared POC database with tenant-service and mt-member-group-ws.
+  # auth-service owns the "auth" schema (users, user_tenants, demo members/claims) and only READS platform.tenants.
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/platform_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate.ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: auth
+        hbm2ddl.create_namespaces: true
+jwt:
+  secret: ${JWT_SECRET:HRdiJ624Je8Zq2o4/aLvFzAB2rqa8gzdoFb0kLZeo3GOt59akrvUtv8YGVr/kwDK}
+app:
+  seed-demo: true
+  # Tenant registry owned by tenant-service
+  tenant-table: platform.tenants

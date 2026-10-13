@@ -1,0 +1,87 @@
+### Generate tokens first, e.g. in PowerShell:
+###   .\scripts\new-dev-token.ps1 -Role TENANT_ADMIN -TenantId 1
+###   .\scripts\new-dev-token.ps1 -Role TENANT_USER  -TenantId 1
+###   .\scripts\new-dev-token.ps1 -Role SUPER_ADMIN
+### and paste them below.
+@base = http://localhost:8082/api/v1
+@adminToken = PASTE_TENANT_ADMIN_TOKEN
+@userToken = PASTE_TENANT_USER_TOKEN
+@superToken = PASTE_SUPER_ADMIN_TOKEN
+
+### What did the service resolve from my token?
+GET {{base}}/context
+Authorization: Bearer {{adminToken}}
+
+### Create member
+POST {{base}}/members
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jane.doe@example.com",
+  "memberNumber": "M1001",
+  "dateOfBirth": "1985-04-12",
+  "carrierHqCode": "MBR01"
+}
+
+### Search members (tenant user, read-only)
+GET {{base}}/members?q=doe&page=0&size=10
+Authorization: Bearer {{userToken}}
+
+### Tenant user CAN create
+POST {{base}}/members
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{ "firstName": "John", "lastName": "Smith", "email": "john.smith@example.com" }
+
+### Tenant user cannot deactivate -> 403
+DELETE {{base}}/members/2
+Authorization: Bearer {{userToken}}
+
+### Tenant user cannot see membership history -> 403
+GET {{base}}/members/1/groups?includeHistory=true
+Authorization: Bearer {{userToken}}
+
+### Tenant admin deactivates and reactivates
+DELETE {{base}}/members/2
+Authorization: Bearer {{adminToken}}
+
+###
+POST {{base}}/members/2/reactivate
+Authorization: Bearer {{adminToken}}
+
+### Create group
+POST {{base}}/groups
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "groupNumber": "G100", "groupName": "Employees", "groupDesc": "Default employee group" }
+
+### Add member 1 to group 1
+POST {{base}}/groups/1/members
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "memberId": 1 }
+
+### Group members
+GET {{base}}/groups/1/members
+Authorization: Bearer {{adminToken}}
+
+### Member's groups incl. history
+GET {{base}}/members/1/groups?includeHistory=true
+Authorization: Bearer {{adminToken}}
+
+### Remove member from group
+DELETE {{base}}/groups/1/members/1
+Authorization: Bearer {{adminToken}}
+
+### Super admin -> 403 (tenant management only)
+GET {{base}}/members
+Authorization: Bearer {{superToken}}
+
+### No token -> 401
+GET {{base}}/members

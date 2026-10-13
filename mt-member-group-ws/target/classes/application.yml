@@ -1,0 +1,51 @@
+server:
+  # auth-service and tenant-service both default to 8080; this one uses 8082
+  port: ${SERVER_PORT:8082}
+
+spring:
+  application:
+    name: mt-member-group-ws
+  # Same database as tenant-service: platform.tenants + one schema per tenant
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:platform_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:10}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+# MUST be the same value as auth-service (HS256 shared secret)
+jwt:
+  secret: ${JWT_SECRET:HRdiJ624Je8Zq2o4/aLvFzAB2rqa8gzdoFb0kLZeo3GOt59akrvUtv8YGVr/kwDK}
+
+app:
+  tenancy:
+    # Tenant registry owned by tenant-service
+    tenant-table: platform.tenants
+    # Tenant status values allowed to call member/group APIs
+    active-statuses: ACTIVE
+    # Create member_group / group_membership in a tenant schema when it is first used
+    auto-provision: true
+    # How long a tenantId -> schema lookup is cached
+    cache-ttl: 5m
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.medimpact.mt: DEBUG
